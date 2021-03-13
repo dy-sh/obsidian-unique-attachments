@@ -23,8 +23,5 @@ export class SettingTab extends PluginSettingTab {
         containerEl.empty();
 
         containerEl.createEl('h2', { text: 'Unique attachments - Settings' });
-
-      
-
-      
+    }
 }
