@@ -1,7 +1,7 @@
 import { App, Plugin, TAbstractFile, TFile, EmbedCache, LinkCache } from 'obsidian';
 import { PluginSettings, DEFAULT_SETTINGS, SettingTab } from './settings';
 import { Utils } from './utils';
-import { LinksHandler } from './links-handler';
+import { LinksHandler, LinkChangeInfo } from './links-handler';
 import { FilesHandler } from './files-handler';
 
 const path = require('path');
@@ -51,10 +51,15 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 			console.warn(file.path)
 			console.warn(validPath);
 
-			// this.app.vault.rename(file,"")
+			let notes = this.lh.getNotesThatHaveLinkToFile(file.path);
+			console.log(notes)
+			if (notes) {
+				for (let note of notes) {
+					await this.lh.updateChangedLinkInNote(note, file.path, validPath);
+				}
+			}
 
-
-			// let backlinks = this.lh.getNotesThatHaveLinkToFile(file.path);
+			await this.app.vault.rename(file, validPath);
 		}
 	}
 

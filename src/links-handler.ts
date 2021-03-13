@@ -100,7 +100,12 @@ export class LinksHandler {
 		}
 	}
 
-	async updateChangedLinksInNote(notePath: string, changedLinks: LinkChangeInfo[], changelinksAlt: boolean) {
+	async updateChangedLinkInNote(notePath: string, oldLink: string, newLink: string, changelinksAlt: boolean = false) {
+		let changes: LinkChangeInfo[] = [{ oldPath: oldLink, newPath: newLink }];
+		return await this.updateChangedLinksInNote(notePath, changes, changelinksAlt);
+	}
+
+	async updateChangedLinksInNote(notePath: string, changedLinks: LinkChangeInfo[], changelinksAlt: boolean = false) {
 		let file = this.getFileByPath(notePath);
 		if (!file) {
 			console.error(this.consoleLogPrefix + "cant update links in note, file not found: " + notePath);
