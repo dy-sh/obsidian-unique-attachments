@@ -32,7 +32,6 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 	async renameAllAttachments() {
 		var files = this.app.vault.getFiles();
 
-
 		for (let file of files) {
 			if (this.checkFilePathIsIgnored(file.path) || !this.checkFileTypeIsAllowed(file.path)) {
 				continue;
@@ -48,8 +47,11 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 				continue
 			}
 
-			console.warn(baseName)
-			console.warn(validBaseName);
+			let validPath = this.lh.getFilePathWithRenamedBaseName(file.path, validBaseName);
+			console.warn(file.path)
+			console.warn(validPath);
+
+			// this.app.vault.rename(file,"")
 
 
 			// let backlinks = this.lh.getNotesThatHaveLinkToFile(file.path);

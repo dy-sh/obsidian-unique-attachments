@@ -230,4 +230,7 @@ export class LinksHandler {
 	}
 
 
+	getFilePathWithRenamedBaseName(filePath: string, newBaseName: string): string {
+		return Utils.normalizePathForFile(path.join(path.dirname(filePath), newBaseName + path.extname(filePath)));
+	}
 }
