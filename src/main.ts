@@ -64,11 +64,19 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 	}
 
 	checkFilePathIsIgnored(filePath: string): boolean {
-		return (filePath.startsWith(".git") || filePath.startsWith(".obsidian"))
+		for (let folder of this.settings.ignoreFolders) {
+			if (filePath.startsWith(folder))
+				return true;
+		}
+		return false;
 	}
 
 	checkFileTypeIsAllowed(filePath: string): boolean {
-		return (filePath.endsWith(".jpg") || filePath.endsWith(".png"))
+		for (let ext of this.settings.includeFileTypes) {
+			if (filePath.endsWith("." + ext))
+				return true;
+		}
+		return false;
 	}
 
 	async generateValidBaseName(filePath: string) {
