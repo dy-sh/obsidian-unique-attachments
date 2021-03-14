@@ -3,12 +3,14 @@ import ConsistentAttachmentsAndLinks from './main';
 
 export interface PluginSettings {
     ignoreFolders: string[];
-    includeFileTypes: string[];
+    renameFileTypes: string[];
+    renameOnlyLinkedAttachments: boolean,
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
     ignoreFolders: [".git/", ".obsidian/"],
-    includeFileTypes: ["png", "jpg", "gif"],
+    renameFileTypes: ["png", "jpg", "gif"],
+    renameOnlyLinkedAttachments: true,
 }
 
 export class SettingTab extends PluginSettingTab {
@@ -27,14 +29,14 @@ export class SettingTab extends PluginSettingTab {
         containerEl.createEl('h2', { text: 'Unique attachments - Settings' });
 
         new Setting(containerEl)
-        .setName("Process file types")
-        .setDesc("Search and rename attachments of the listed file types. Write file types separated by comma.")
+        .setName("File types to rename")
+        .setDesc("Search and rename attachments of the listed file types. Write types separated by comma.")
         .addTextArea(cb => cb
             .setPlaceholder("Example: jpg,png,gif")
-            .setValue(this.plugin.settings.includeFileTypes.join(","))
+            .setValue(this.plugin.settings.renameFileTypes.join(","))
             .onChange((value) => {
                 let extensions = value.trim().split(",");
-                this.plugin.settings.includeFileTypes = extensions;
+                this.plugin.settings.renameFileTypes = extensions;
                 this.plugin.saveSettings();
             }));
 
@@ -52,7 +54,14 @@ export class SettingTab extends PluginSettingTab {
                 this.plugin.saveSettings();
             }));
 
-
+            new Setting(containerEl)
+            .setName('Rename only linked attachments')
+            .setDesc('Rename only attachments that are used in notes. If disabled, all found files will be renamed.')
+            .addToggle(cb => cb.onChange(value => {
+                this.plugin.settings.renameOnlyLinkedAttachments = value;
+                this.plugin.saveSettings();
+            }
+            ).setValue(this.plugin.settings.renameOnlyLinkedAttachments));
     }
 
     getNormalizedPath(path: string): string {

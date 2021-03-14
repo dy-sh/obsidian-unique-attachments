@@ -44,14 +44,21 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 			if (baseName == validBaseName) {
 				console.log(baseName)
 				console.log(validBaseName);
-				continue
+				continue;
+			}
+
+			let notes = this.lh.getNotesThatHaveLinkToFile(file.path);
+
+			if (!notes || notes.length == 0) {
+				if (this.settings.renameOnlyLinkedAttachments) {
+					continue;
+				}
 			}
 
 			let validPath = this.lh.getFilePathWithRenamedBaseName(file.path, validBaseName);
 			console.warn(file.path)
 			console.warn(validPath);
 
-			let notes = this.lh.getNotesThatHaveLinkToFile(file.path);
 			console.log(notes)
 			if (notes) {
 				for (let note of notes) {
@@ -72,7 +79,7 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 	}
 
 	checkFileTypeIsAllowed(filePath: string): boolean {
-		for (let ext of this.settings.includeFileTypes) {
+		for (let ext of this.settings.renameFileTypes) {
 			if (filePath.endsWith("." + ext))
 				return true;
 		}
