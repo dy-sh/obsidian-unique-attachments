@@ -41,7 +41,7 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 
 
 	async renameAttachmentIfNeeded(file: TAbstractFile) {
-		let filePath=file.path;
+		let filePath = file.path;
 		if (this.checkFilePathIsIgnored(filePath) || !this.checkFileTypeIsAllowed(filePath)) {
 			return;
 		}
@@ -52,16 +52,15 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 		if (baseName == validBaseName) {
 			return;
 		}
-		
-		let notes = this.lh.getNotesThatHaveLinkToFile(filePath);
 
-		
+		let notes = await this.lh.getNotesThatHaveLinkToFile(filePath);
+
 		if (!notes || notes.length == 0) {
 			if (this.settings.renameOnlyLinkedAttachments) {
 				return;
 			}
 		}
-		
+
 		let validPath = this.lh.getFilePathWithRenamedBaseName(filePath, validBaseName);
 
 		let targetFileAlreadyExists = await this.app.vault.adapter.exists(validPath)
@@ -84,24 +83,23 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 			} catch (e) {
 				console.error("Unique attachments: cant delete duplicate file " + filePath + ".\n" + e);
 				return;
-			}			
-			
+			}
+
 			if (notes) {
 				for (let note of notes) {
 					await this.lh.updateChangedLinkInNote(note, filePath, validPath);
 				}
 			}
-			
+
 			console.log("Unique attachments: file content is the same in \n   " + filePath + "\n   and \n   " + validPath + "\n   Duplicates merged.")
-			// await Utils.delay(1)
-		} else {			
+		} else {
 			try {
 				await this.app.vault.rename(file, validPath);
 			} catch (e) {
 				console.error("Unique attachments: cant rename file \n   " + filePath + "\n   to \n   " + validPath + "   \n" + e);
 				return;
 			}
-			
+
 			if (notes) {
 				for (let note of notes) {
 					await this.lh.updateChangedLinkInNote(note, filePath, validPath);
@@ -109,7 +107,6 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 			}
 
 			console.log("Unique attachments: file renamed [from, to]:\n   " + filePath + "\n   " + validPath);
-			// await Utils.delay(1)
 		}
 	}
 

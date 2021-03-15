@@ -36,10 +36,11 @@ export class FilesHandler {
 
 
 
-	async moveNoteAttachments(oldNotePath: string, newNotePath: string,
+	async moveCachedNoteAttachments(oldNotePath: string, newNotePath: string,
 		deleteExistFiles: boolean, updateLinks: boolean) {
 
 		//try to get embeds for olad or new path (metadataCache can be updated or not)		
+		//!!! this can return undefined if note was just updated
 		let embeds = this.app.metadataCache.getCache(newNotePath)?.embeds;
 		if (!embeds)
 			embeds = this.app.metadataCache.getCache(oldNotePath)?.embeds;
@@ -68,7 +69,7 @@ export class FilesHandler {
 				let newLinkPath = this.lh.getFullPathForLink(link, newNotePath);
 
 
-				let linkedNotes = this.lh.getNotesThatHaveLinkToFile(file.path);
+				let linkedNotes = this.lh.getCachedNotesThatHaveLinkToFile(file.path);
 
 				//if no other file has link to this file - try to move file
 				//if file already exist at new location - delete or move with new name
@@ -144,14 +145,15 @@ export class FilesHandler {
 		}
 	}
 
-	async deleteUnusedAttachmentsForNote(notePath: string) {
+	async deleteUnusedAttachmentsForCachedNote(notePath: string) {
+		//!!! this can return undefined if note was just updated
 		let embeds = this.app.metadataCache.getCache(notePath)?.embeds;
 		if (embeds) {
 			for (let embed of embeds) {
 				let link = embed.link;
 
 				let fullPath = this.lh.getFullPathForLink(link, notePath);
-				let linkedNotes = this.lh.getNotesThatHaveLinkToFile(fullPath);
+				let linkedNotes = this.lh.getCachedNotesThatHaveLinkToFile(fullPath);
 				if (linkedNotes.length == 0) {
 					let file = this.lh.getFileByLink(link, notePath);
 					if (file) {
