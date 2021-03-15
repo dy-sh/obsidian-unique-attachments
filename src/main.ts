@@ -1,4 +1,4 @@
-import { App, Plugin, TAbstractFile, TFile, EmbedCache, LinkCache } from 'obsidian';
+import { App, Plugin, TAbstractFile, TFile, EmbedCache, LinkCache, Notice } from 'obsidian';
 import { PluginSettings, DEFAULT_SETTINGS, SettingTab } from './settings';
 import { Utils } from './utils';
 import { LinksHandler, LinkChangeInfo } from './links-handler';
@@ -32,32 +32,42 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 
 
 	async renameAllAttachments() {
-		var files = this.app.vault.getFiles();
+		let files = this.app.vault.getFiles();
+		let renamedCount = 0;
 
 		for (let file of files) {
-			await this.renameAttachmentIfNeeded(file);
+			let renamed = await this.renameAttachmentIfNeeded(file);
+			if (renamed)
+				renamedCount++;
 		}
+
+		if (renamedCount == 0)
+			new Notice("No files found that need to be renamed");
+		else if (renamedCount == 1)
+			new Notice("Renamed 1 file.");
+		else
+			new Notice("Renamed " + renamedCount + " files.");
 	}
 
 
-	async renameAttachmentIfNeeded(file: TAbstractFile) {
+	async renameAttachmentIfNeeded(file: TAbstractFile): Promise<boolean> {
 		let filePath = file.path;
 		if (this.checkFilePathIsIgnored(filePath) || !this.checkFileTypeIsAllowed(filePath)) {
-			return;
+			return false;
 		}
 
 		let ext = path.extname(filePath);
 		let baseName = path.basename(filePath, ext);
 		let validBaseName = await this.generateValidBaseName(filePath);
 		if (baseName == validBaseName) {
-			return;
+			return false;
 		}
 
 		let notes = await this.lh.getNotesThatHaveLinkToFile(filePath);
 
 		if (!notes || notes.length == 0) {
 			if (this.settings.renameOnlyLinkedAttachments) {
-				return;
+				return false;
 			}
 		}
 
@@ -70,19 +80,19 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 			let validAnotherFileBaseName = await this.generateValidBaseName(validPath);
 			if (validAnotherFileBaseName != validBaseName) {
 				console.warn("Unique attachments: cant rename file \n   " + filePath + "\n    to\n   " + validPath + "\n   Another file exists with the same (target) name but different content.")
-				return;
+				return false;
 			}
 
 			if (!this.settings.mergeTheSameAttachments) {
 				console.warn("Unique attachments: cant rename file \n   " + filePath + "\n    to\n   " + validPath + "\n   Another file exists with the same (target) name and the same content. You can enable \"Delte duplicates\" setting for delete this file and merge attachments.")
-				return;
+				return false;
 			}
 
 			try {
 				await this.app.vault.delete(file);
 			} catch (e) {
 				console.error("Unique attachments: cant delete duplicate file " + filePath + ".\n" + e);
-				return;
+				return false;
 			}
 
 			if (notes) {
@@ -97,7 +107,7 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 				await this.app.vault.rename(file, validPath);
 			} catch (e) {
 				console.error("Unique attachments: cant rename file \n   " + filePath + "\n   to \n   " + validPath + "   \n" + e);
-				return;
+				return false;
 			}
 
 			if (notes) {
@@ -108,6 +118,8 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 
 			console.log("Unique attachments: file renamed [from, to]:\n   " + filePath + "\n   " + validPath);
 		}
+
+		return true;
 	}
 
 
