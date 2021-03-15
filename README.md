@@ -1,5 +1,7 @@
 # Unique attachments
 
+> For now, the plugin is only compatible with standard markdown links. Wikilinks are not supported.
+
 This plugin renames attachments, making their names unique. 
 A hash function (MD5) is used to generate the filename, so the filename is indeed unique.
 
