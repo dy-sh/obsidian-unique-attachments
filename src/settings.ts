@@ -67,7 +67,7 @@ export class SettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Delete duplicates')
-            .setDesc('If several files are in the same folder and have identical contents then delete duplicates, keep only one file.')
+            .setDesc('If several files in the same folder have identical contents then delete duplicates. Otherwise, the file will be ignored (not renamed).')
             .addToggle(cb => cb.onChange(value => {
                 this.plugin.settings.mergeTheSameAttachments = value;
                 this.plugin.saveSettings();

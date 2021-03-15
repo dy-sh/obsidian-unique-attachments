@@ -92,14 +92,13 @@ export class LinksHandler {
 	}
 
 
-
-	async updateLinksToRenamedFile(oldNotePath: string, newNotePath: string, changelinksAlt = false, readFromCache = true) {
-		let notes = await this.getNotesThatHaveLinkToFile(oldNotePath, readFromCache);
-		let changedLinks: LinkChangeInfo[] = [{ oldPath: oldNotePath, newPath: newNotePath }];
+	async updateLinksToRenamedFile(oldNotePath: string, newNotePath: string, changelinksAlt = false) {
+		let notes = await this.getNotesThatHaveLinkToFile(oldNotePath);
+		let links: LinkChangeInfo[] = [{ oldPath: oldNotePath, newPath: newNotePath }];
 
 		if (notes) {
 			for (let note of notes) {
-				await this.updateChangedLinksInNote(note, changedLinks, changelinksAlt);
+				await this.updateChangedLinksInNote(note, links, changelinksAlt);
 			}
 		}
 	}

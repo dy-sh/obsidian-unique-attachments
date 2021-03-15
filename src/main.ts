@@ -2,7 +2,6 @@ import { App, Plugin, TAbstractFile, TFile, EmbedCache, LinkCache, Notice } from
 import { PluginSettings, DEFAULT_SETTINGS, SettingTab } from './settings';
 import { Utils } from './utils';
 import { LinksHandler, LinkChangeInfo } from './links-handler';
-import { FilesHandler } from './files-handler';
 
 const path = require('path');
 var crypto = require('crypto');
@@ -11,7 +10,6 @@ var crypto = require('crypto');
 export default class ConsistentAttachmentsAndLinks extends Plugin {
 	settings: PluginSettings;
 	lh: LinksHandler;
-	fh: FilesHandler;
 
 
 	async onload() {
@@ -27,7 +25,6 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 
 
 		this.lh = new LinksHandler(this.app, "Unique attachments: ");
-		this.fh = new FilesHandler(this.app, this.lh, "Unique attachments: ");
 	}
 
 
