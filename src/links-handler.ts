@@ -143,7 +143,7 @@ export class LinksHandler {
 						dirty = true;
 
 						console.log(this.consoleLogPrefix + "link updated in note [note, old link, new link]: \n   "
-							+ file.path + "\n   " + link + "   \n" + newRelLink)
+							+ file.path + "\n   " + link + "\n   " + newRelLink)
 					}
 				}
 			}
@@ -206,7 +206,11 @@ export class LinksHandler {
 			for (let note of allNotes) {
 				let notePath = note.path;
 
+				//!!! this can return undefined if note was just updated
 				let embeds = this.app.metadataCache.getCache(notePath)?.embeds;
+
+				console.warn(notePath)
+				console.warn(embeds)
 
 				if (embeds) {
 					for (let embed of embeds) {
@@ -218,6 +222,7 @@ export class LinksHandler {
 					}
 				}
 
+				//!!! this can return undefined if note was just updated
 				let links = this.app.metadataCache.getCache(notePath)?.links;
 				if (links) {
 					for (let link of links) {
