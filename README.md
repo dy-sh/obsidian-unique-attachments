@@ -9,6 +9,19 @@ After processing, the filenames look something like this: 5be2a494d8c98092d80371
 
 This approach to naming attachments will add a bit of consistency to your notes. You might want to use this plugin in conjunction with [Consistent attachments and links](https://github.com/derwish-pro/obsidian-consistent-attachments-and-links) plugin.
 
+After renaming the files, the plugin updates the links in all notes that used these files.
+
 This plugin can also delete duplicates (files that have the same content) if they are in the same folder. This will make your vault a little cleaner.
 
-In the settings, you can set the type of attachments that will be processed. Or you can ignore some folders that you don't want to process.
+## How to configure
+
+Assign a hotkey to "Unique attachments: Rename all attachments" command in the Obsidian Hotkeys settings.
+
+In the plugin settings, you can set the type of attachments that will be processed. Or you can ignore some folders that you don't want to process.
+
+## How to use
+
+Call the hotkey when you want to search and rename attachments. You will see a notification about how many files have been renamed. In the console, you can see more detailed information about what happened.
+
+
+It is recommended to make a backup of your files before using this plugin.
