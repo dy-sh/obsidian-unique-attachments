@@ -1,10 +1,10 @@
 import { App, Plugin, TAbstractFile, TFile, EmbedCache, LinkCache, Notice } from 'obsidian';
 import { PluginSettings, DEFAULT_SETTINGS, SettingTab } from './settings';
-import { Utils } from './utils';
 import { LinksHandler, LinkChangeInfo } from './links-handler';
+import { path } from './path';
+import { Md5 } from './md5/md5';
 
-const path = require('path');
-var crypto = require('crypto');
+
 
 
 export default class ConsistentAttachmentsAndLinks extends Plugin {
@@ -94,7 +94,7 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 
 			if (notes) {
 				for (let note of notes) {
-					await this.lh.updateChangedLinkInNote(note, filePath, validPath);
+					await this.lh.updateChangedPathInNote(note, filePath, validPath);
 				}
 			}
 
@@ -109,7 +109,7 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 
 			if (notes) {
 				for (let note of notes) {
-					await this.lh.updateChangedLinkInNote(note, filePath, validPath);
+					await this.lh.updateChangedPathInNote(note, filePath, validPath);
 				}
 			}
 
@@ -142,9 +142,15 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 		let file = this.lh.getFileByPath(filePath);
 		let data = await this.app.vault.readBinary(file);
 		const buf = Buffer.from(data);
-		let md5: string = crypto.createHash('md5').update(buf).digest("hex");
 
-		return md5;
+		// var crypto = require('crypto');
+		// let hash: string = crypto.createHash('md5').update(buf).digest("hex");
+
+		let md5 = new Md5();
+		md5.appendByteArray(buf);
+		let hash = md5.end().toString();
+
+		return hash;
 	}
 
 
