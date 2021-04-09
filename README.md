@@ -1,7 +1,5 @@
 # Unique attachments
 
-> The plugin is only compatible with standard markdown links. Wikilinks are not supported. You can convert all wikilinks to markdown links with [Consistent attachments and links](https://github.com/derwish-pro/obsidian-consistent-attachments-and-links) plugin.
-
 This plugin for [Obsidian](https://obsidian.md/) renames attachments, making their names unique. 
 A hash function (MD5) is used to generate the filename, so the filename is indeed unique.
 
@@ -17,6 +15,7 @@ This plugin can also delete duplicates (files that have the same content) if the
 
 In the settings there is also an option **"Rename only linked attachments"**. If it is enabled, you can be sure that the plugin renames only those files that are referenced in the notes in the standard markdown format. So, if no note is referenced to the file, or refers to it in wikilink format, then this file will be ignored.
 
+**The plugin is only compatible with standard markdown links. Wikilinks are not supported. You can convert all wikilinks to markdown links with [Consistent attachments and links](https://github.com/derwish-pro/obsidian-consistent-attachments-and-links) plugin.**
 
 ## How to configure
 
