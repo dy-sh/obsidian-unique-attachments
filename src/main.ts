@@ -167,42 +167,27 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 		}
 
 		// save the previous file name
-		let actMetadataCache = this.app.metadataCache.getFileCache(mdfile);
-		let currentView = this.app.workspace.activeLeaf.view as MarkdownView;
-		let cmDoc = currentView.sourceMode.cmEditor;
-		if (actMetadataCache.links) {
-			for (let eachLink of actMetadataCache.links) {
-				if (eachLink.link != eachLink.displayText) {
-					continue;
-				}
-				let afile = this.app.metadataCache.getFirstLinkpathDest(getLinkpath(eachLink.link), mdfile.path);
-				if (afile != null && afile.path == file.path) {
-					let newlink = this.app.fileManager.generateMarkdownLink(afile, file.parent.path, "", baseName);
-					// remove symbol '!'
-					newlink = newlink.substring(1);
-					const linkstart = eachLink.position.start;
-					const linkend = eachLink.position.end;
-					cmDoc.replaceRange(newlink, 
-							   {line: linkstart.line, ch: linkstart.col},
-							   {line: linkend.line, ch: linkend.col});
-					currentView.save();
-				}
-			}
-		}
-		if (actMetadataCache.embeds) {
-			for (let eachLink of actMetadataCache.embeds) {
-				if (eachLink.link != eachLink.displayText) {
-					continue;
-				}
-				let afile = this.app.metadataCache.getFirstLinkpathDest(getLinkpath(eachLink.link), mdfile.path);
-				if (afile != null && afile.path == file.path) {
-					let newlink = this.app.fileManager.generateMarkdownLink(afile, file.parent.path, "", baseName);
-					const linkstart = eachLink.position.start;
-					const linkend = eachLink.position.end;
-					cmDoc.replaceRange(newlink, 
-							   {line: linkstart.line, ch: linkstart.col},
-							   {line: linkend.line, ch: linkend.col});
-					currentView.save();
+		if (this.settings.savePreviousName) {
+			let actMetadataCache = this.app.metadataCache.getFileCache(mdfile);
+			let currentView = this.app.workspace.activeLeaf.view as MarkdownView;
+			let cmDoc = currentView.sourceMode.cmEditor;
+			if (actMetadataCache.links) {
+				for (let eachLink of actMetadataCache.links) {
+					if (eachLink.link != eachLink.displayText) {
+						continue;
+					}
+					let afile = this.app.metadataCache.getFirstLinkpathDest(getLinkpath(eachLink.link), mdfile.path);
+					if (afile != null && afile.path == file.path) {
+						let newlink = this.app.fileManager.generateMarkdownLink(afile, file.parent.path, "", baseName);
+						// remove symbol '!'
+						newlink = newlink.substring(1);
+						const linkstart = eachLink.position.start;
+						const linkend = eachLink.position.end;
+						cmDoc.replaceRange(newlink, 
+								   {line: linkstart.line, ch: linkstart.col},
+								   {line: linkend.line, ch: linkend.col});
+						currentView.save();
+					}
 				}
 			}
 		}
