@@ -1,4 +1,4 @@
-import { App, Plugin, TAbstractFile, TFile, EmbedCache, LinkCache, Notice, MarkdownView, getLinkpath } from 'obsidian';
+import { App, Plugin, TAbstractFile, TFile, EmbedCache, LinkCache, Notice, MarkdownView, getLinkpath, CachedMetadata } from 'obsidian';
 import { PluginSettings, DEFAULT_SETTINGS, SettingTab } from './settings';
 import { LinksHandler, LinkChangeInfo } from './links-handler';
 import { path } from './path';
@@ -60,16 +60,9 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 		if (!mdfile.path.endsWith(".md")) {
 			return;
 		}
+			
+		let renamedCount = await this.renameAttachmentsForActiveMD(mdfile);
 		
-		let rlinks = Object.keys(this.app.metadataCache.resolvedLinks[mdfile.path]);
-		let renamedCount = 0;
-
-		for (let rlink of rlinks) {
-			let renamed = await this.renameAttachmentForActiveMD(rlink, mdfile);
-			if (renamed)
-				renamedCount++;
-		}
-
 		if (renamedCount == 0)
 			new Notice("No files found that need to be renamed");
 		else if (renamedCount == 1)
@@ -152,47 +145,69 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 	}
 
 	// just rename the files and let Obsidian to update the links
-	async renameAttachmentForActiveMD(rlink: string, mdfile: TFile): Promise<boolean> {
-		let file = this.app.vault.getAbstractFileByPath(rlink)
-		let filePath = file.path;
-		if (this.checkFilePathIsIgnored(filePath) || !this.checkFileTypeIsAllowed(filePath)) {
-			return false;
+	async renameAttachmentsForActiveMD(mdfile: TFile): Promise<number> {
+
+		let rlinks = Object.keys(this.app.metadataCache.resolvedLinks[mdfile.path]);
+		let renamedCount = 0;
+		
+		let actMetadataCache = this.app.metadataCache.getFileCache(mdfile);
+		let currentView = this.app.workspace.activeLeaf.view as MarkdownView;
+
+		for (let rlink of rlinks) {
+			let file = this.app.vault.getAbstractFileByPath(rlink)
+			let filePath = file.path;
+			if (this.checkFilePathIsIgnored(filePath) || !this.checkFileTypeIsAllowed(filePath)) {
+				continue;
+			}
+
+			let ext = path.extname(filePath);
+			let baseName = path.basename(filePath, ext);
+			let validBaseName = await this.generateValidBaseName(filePath);
+			if (baseName == validBaseName) {
+				continue;
+			}
+
+			if (this.settings.savePreviousName) {
+				this.saveAttachmentNameInLink(actMetadataCache, mdfile, file, baseName, currentView);
+			}
+			currentView.save();
+
+			if (!this.renameAttachment(file, validBaseName)) {
+				continue;
+			}
+			renamedCount++;
 		}
 
-		let ext = path.extname(filePath);
-		let baseName = path.basename(filePath, ext);
-		let validBaseName = await this.generateValidBaseName(filePath);
-		if (baseName == validBaseName) {
-			return false;
+		return renamedCount;
+	}
+	
+	saveAttachmentNameInLink(mdc: CachedMetadata, mdfile: TFile, file: TAbstractFile, baseName: string, currentView: MarkdownView) {
+		let cmDoc = currentView.sourceMode.cmEditor;
+		if (!mdc.links) {
+			return;
 		}
 
-		// save the previous file name
-		if (this.settings.savePreviousName) {
-			let actMetadataCache = this.app.metadataCache.getFileCache(mdfile);
-			let currentView = this.app.workspace.activeLeaf.view as MarkdownView;
-			let cmDoc = currentView.sourceMode.cmEditor;
-			if (actMetadataCache.links) {
-				for (let eachLink of actMetadataCache.links) {
-					if (eachLink.link != eachLink.displayText) {
-						continue;
-					}
-					let afile = this.app.metadataCache.getFirstLinkpathDest(getLinkpath(eachLink.link), mdfile.path);
-					if (afile != null && afile.path == file.path) {
-						let newlink = this.app.fileManager.generateMarkdownLink(afile, file.parent.path, "", baseName);
-						// remove symbol '!'
-						newlink = newlink.substring(1);
-						const linkstart = eachLink.position.start;
-						const linkend = eachLink.position.end;
-						cmDoc.replaceRange(newlink, 
-								   {line: linkstart.line, ch: linkstart.col},
-								   {line: linkend.line, ch: linkend.col});
-						currentView.save();
-					}
-				}
+		for (let eachLink of mdc.links) {
+			if (eachLink.displayText != "" && eachLink.link != eachLink.displayText) {
+				continue;
+			}
+			let afile = this.app.metadataCache.getFirstLinkpathDest(getLinkpath(eachLink.link), mdfile.path);
+			if (afile != null && afile.path == file.path) {
+				let newlink = this.app.fileManager.generateMarkdownLink(afile, file.parent.path, "", baseName);
+				// remove symbol '!'
+				newlink = newlink.substring(1);
+				const linkstart = eachLink.position.start;
+				const linkend = eachLink.position.end;
+				cmDoc.replaceRange(newlink, 
+						   {line: linkstart.line, ch: linkstart.col},
+						   {line: linkend.line, ch: linkend.col});
 			}
 		}
+	}
 
-		let validPath = this.lh.getFilePathWithRenamedBaseName(filePath, validBaseName);
+	async renameAttachment(file: TAbstractFile, validBaseName: string): Promise<boolean> {
+
+		let validPath = this.lh.getFilePathWithRenamedBaseName(file.path, validBaseName);
 
 		let targetFileAlreadyExists = await this.app.vault.adapter.exists(validPath)
 
@@ -200,12 +215,12 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 			//if file content is the same in both files, one of them will be deleted			
 			let validAnotherFileBaseName = await this.generateValidBaseName(validPath);
 			if (validAnotherFileBaseName != validBaseName) {
-				console.warn("Unique attachments: cant rename file \n   " + filePath + "\n    to\n   " + validPath + "\n   Another file exists with the same (target) name but different content.")
+				console.warn("Unique attachments: cant rename file \n   " + file.path + "\n    to\n   " + validPath + "\n   Another file exists with the same (target) name but different content.")
 				return false;
 			}
 
 			if (!this.settings.mergeTheSameAttachments) {
-				console.warn("Unique attachments: cant rename file \n   " + filePath + "\n    to\n   " + validPath + "\n   Another file exists with the same (target) name and the same content. You can enable \"Delte duplicates\" setting for delete this file and merge attachments.")
+				console.warn("Unique attachments: cant rename file \n   " + file.path + "\n    to\n   " + validPath + "\n   Another file exists with the same (target) name and the same content. You can enable \"Delte duplicates\" setting for delete this file and merge attachments.")
 				return false;
 			}
 
@@ -217,22 +232,21 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 				// and give the same name to the new one
 				await this.app.fileManager.renameFile(file, validPath);
 			} catch (e) {
-				console.error("Unique attachments: cant delete duplicate file " + filePath + ".\n" + e);
+				console.error("Unique attachments: cant delete duplicate file " + file.path + ".\n" + e);
 				return false;
 			}
 
-			console.log("Unique attachments: file content is the same in \n   " + filePath + "\n   and \n   " + validPath + "\n   Duplicates merged.")
+			console.log("Unique attachments: file content is the same in \n   " + file.path + "\n   and \n   " + validPath + "\n   Duplicates merged.")
 		} else {
 			try {
 				await this.app.fileManager.renameFile(file, validPath);
 			} catch (e) {
-				console.error("Unique attachments: cant rename file \n   " + filePath + "\n   to \n   " + validPath + "   \n" + e);
+				console.error("Unique attachments: cant rename file \n   " + file.path + "\n   to \n   " + validPath + "   \n" + e);
 				return false;
 			}
 
-			console.log("Unique attachments: file renamed [from, to]:\n   " + filePath + "\n   " + validPath);
+			console.log("Unique attachments: file renamed [from, to]:\n   " + file.path + "\n   " + validPath);
 		}
-
 		return true;
 	}
 
