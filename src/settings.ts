@@ -6,6 +6,7 @@ export interface PluginSettings {
     renameFileTypes: string[];
     renameOnlyLinkedAttachments: boolean,
     mergeTheSameAttachments: boolean,
+    savePreviousName: boolean,
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
@@ -13,6 +14,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
     renameFileTypes: ["png", "jpg", "gif"],
     renameOnlyLinkedAttachments: true,
     mergeTheSameAttachments: true,
+    savePreviousName: false,
 }
 
 export class SettingTab extends PluginSettingTab {
@@ -64,6 +66,15 @@ export class SettingTab extends PluginSettingTab {
                 this.plugin.saveSettings();
             }
             ).setValue(this.plugin.settings.renameOnlyLinkedAttachments));
+
+	new Setting(containerEl)
+            .setName('Save a previous name')
+            .setDesc('Save a previous name of an attachment in the link. Works with rename-Only-Active-Attachments command.')
+            .addToggle(cb => cb.onChange(value => {
+                this.plugin.settings.savePreviousName = value;
+                this.plugin.saveSettings();
+            }
+            ).setValue(this.plugin.settings.savePreviousName));
 
         new Setting(containerEl)
             .setName('Delete duplicates')

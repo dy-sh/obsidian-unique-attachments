@@ -9,17 +9,17 @@ After processing, the filenames look something like this: 5be2a494d8c98092d80371
 
 This approach to naming attachments will add a bit of consistency to your notes. You might want to use this plugin in conjunction with [Consistent attachments and links](https://github.com/derwish-pro/obsidian-consistent-attachments-and-links) plugin.
 
-After renaming the files, the plugin updates the links in all notes that used these files.
+After using **"Rename all attachments"** the plugin updates the links in all notes that used these files. Alternatively you can use **''Rename only active attachments''** to rename attachments linked only to the current active MD file.
 
 This plugin can also delete duplicates (files that have the same content) if they are in the same folder. This will make your vault a little cleaner.
 
 In the settings there is also an option **"Rename only linked attachments"**. If it is enabled, you can be sure that the plugin renames only those files that are referenced in the notes in the standard markdown format. So, if no note is referenced to the file, or refers to it in wikilink format, then this file will be ignored.
 
-**The plugin is only compatible with standard markdown links. Wikilinks are not supported. You can convert all wikilinks to markdown links with [Consistent attachments and links](https://github.com/derwish-pro/obsidian-consistent-attachments-and-links) plugin.**
+**The "Rename all attachments" command is only compatible with standard markdown links (`![](../attachments/title.png)`). Wikilinks are not supported. You can convert all wikilinks to markdown links with [Consistent attachments and links](https://github.com/derwish-pro/obsidian-consistent-attachments-and-links) plugin. ''Rename only active attachments'' command works with all kind of links and generate links based on your preferences.**
 
 ## How to configure
 
-Assign a hotkey to **"Unique attachments: Rename all attachments"** command in the Obsidian Hotkeys settings.
+Assign a hotkey to **"Unique attachments: Rename all attachments"** and/or **"Unique attachments: Rename only active attachments" commands in the Obsidian Hotkeys settings.
 
 In the plugin settings, you can set the type of attachments that will be processed. Or you can ignore some folders that you don't want to process.
 
