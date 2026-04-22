@@ -182,7 +182,7 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 	}
 	
 	saveAttachmentNameInLink(mdc: CachedMetadata, mdfile: TFile, file: TAbstractFile, baseName: string, currentView: MarkdownView) {
-		let cmDoc = currentView.sourceMode.cmEditor;
+		let cmDoc = currentView.editor;
 		if (!mdc.links) {
 			return;
 		}
@@ -272,7 +272,7 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 	async generateValidBaseName(filePath: string) {
 		let file = this.lh.getFileByPath(filePath);
 		let data = await this.app.vault.readBinary(file);
-		const buf = Buffer.from(data);
+		const buf = new Uint8Array(data);
 
 		// var crypto = require('crypto');
 		// let hash: string = crypto.createHash('md5').update(buf).digest("hex");
@@ -295,7 +295,3 @@ export default class ConsistentAttachmentsAndLinks extends Plugin {
 
 
 }
-
-
-
-
