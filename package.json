@@ -1,6 +1,6 @@
 {
   "name": "unique-attachments",
-  "version": "0.9.7",
+  "version": "1.0.4",
   "description": "Rename attachments, making their names unique (based on hashing of file content)",
   "main": "main.js",
   "scripts": {
